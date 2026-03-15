@@ -1,7 +1,250 @@
-import { useState, useMemo } from "react";
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Grabovoi Code</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: #7a6030;
+    --bg: #080806;
+    --bg2: #0e0d09;
+    --bg3: #141209;
+    --text: #d4c9a8;
+    --text-dim: #7a7260;
+    --border: #2a2518;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, #050503 0%, #080806ee 80%, transparent 100%);
+    padding: 24px 20px 20px;
+    text-align: center;
+    border-bottom: 1px solid #1e1a0e;
+    backdrop-filter: blur(8px);
+  }
+  .eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 6px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(24px, 5vw, 42px);
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-shadow: 0 0 40px #c9a84c44, 0 2px 4px #000;
+    margin-bottom: 4px;
+  }
+  .tagline {
+    font-style: italic;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+  .count-badge {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gold-dim);
+    border: 1px solid var(--gold-dim);
+    padding: 3px 12px;
+    margin-bottom: 16px;
+  }
+  .search-wrap {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto 16px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold-dim);
+    font-size: 14px;
+    pointer-events: none;
+  }
+  #searchInput {
+    width: 100%;
+    padding: 11px 16px 11px 40px;
+    background: #0e0d09;
+    border: 1px solid #2a2518;
+    color: var(--text);
+    font-family: 'Crimson Text', serif;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.5px;
+  }
+  #searchInput:focus { border-color: var(--gold-dim); }
+  #searchInput::placeholder { color: var(--text-dim); font-style: italic; }
+  .filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .filter-btn {
+    padding: 4px 12px;
+    border: 1px solid #2a2518;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+  .filter-btn.active { border-color: var(--gold); color: var(--gold); background: #c9a84c0e; }
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    margin: 20px 0 0;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 12px;
+  }
+  .group-header-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold-dim), transparent);
+  }
+  .group-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .code-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid #1a1708;
+    border-left: 2px solid var(--gold-dim);
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #0e0d0900, #0a0908);
+    transition: all 0.2s;
+  }
+  .code-card:hover { border-left-color: var(--gold); background: #c9a84c08; }
+  .code-info { flex: 1; min-width: 0; }
+  .code-intention { font-size: 16px; color: var(--text); margin-bottom: 5px; font-style: italic; }
+  .code-number {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    color: var(--gold);
+    letter-spacing: 4px;
+    font-weight: 600;
+    text-shadow: 0 0 20px #c9a84c33;
+  }
+  .copy-btn {
+    padding: 7px 14px;
+    border: 1px solid #2a2518;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+  .copy-btn.copied { border-color: var(--gold); color: var(--gold); background: #c9a84c12; }
+  .empty { text-align: center; padding: 80px 0; color: var(--text-dim); font-style: italic; font-size: 18px; }
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid #1a1708;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .fib {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: #2a2518;
+    margin: 12px 0 0;
+    user-select: none;
+  }
+  @media (max-width: 480px) {
+    h1 { font-size: 26px; letter-spacing: 2px; }
+    .code-number { font-size: 15px; letter-spacing: 2px; }
+    .code-card { padding: 12px; }
+    .filter-btn { font-size: 8px; padding: 4px 8px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Radionic Sequences · Grigori Grabovoi</div>
+  <h1>THE GRABOVOI CODE</h1>
+  <div class="tagline">The universe speaks in numbers. Learn the language.</div>
+  <div class="count-badge" id="countBadge">240 Codes · 14 Categories</div>
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search by intention or code number..." oninput="filterCodes()">
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="divider"></div>
+  <div class="fib">1 · 1 · 2 · 3 · 5 · 8 · 13 · 21 · 34 · 55 · 89 · 144</div>
+</header>
+<main id="main"></main>
+<footer>The Grabovoi Code &nbsp;·&nbsp; For Intention Setting &amp; Manifestation Practice &nbsp;·&nbsp; Not Medical Advice</footer>
+<script>
 const codes = [
-  // Wealth & Money
   { category: "Wealth & Money", intention: "Unexpected money", code: "5207418" },
   { category: "Wealth & Money", intention: "Unexpected wealth", code: "17517038" },
   { category: "Wealth & Money", intention: "Steady, generous income", code: "9213140" },
@@ -14,7 +257,6 @@ const codes = [
   { category: "Wealth & Money", intention: "Normalize finances", code: "71427321893" },
   { category: "Wealth & Money", intention: "Dream job", code: "493151864 1491" },
   { category: "Wealth & Money", intention: "Get a job fast", code: "218 494517601" },
-  // Business
   { category: "Business", intention: "Entrepreneurship", code: "71974131981" },
   { category: "Business", intention: "Recognition", code: "7008832" },
   { category: "Business", intention: "Business success", code: "706385425" },
@@ -32,7 +274,6 @@ const codes = [
   { category: "Business", intention: "Social media fame", code: "69719024" },
   { category: "Business", intention: "Social media growth", code: "73590366" },
   { category: "Business", intention: "Domestic economy normalization", code: "137 142" },
-  // Manifestation
   { category: "Manifestation", intention: "Good luck", code: "817219738" },
   { category: "Manifestation", intention: "Create miracles", code: "519 7148" },
   { category: "Manifestation", intention: "Fast materialization", code: "719 48171" },
@@ -46,7 +287,6 @@ const codes = [
   { category: "Manifestation", intention: "Remove unconscious resistance", code: "548491698719" },
   { category: "Manifestation", intention: "Abundance", code: "71427321893" },
   { category: "Manifestation", intention: "Harmonize surrounding space", code: "14888948" },
-  // Emotional Wellbeing
   { category: "Emotional Wellbeing", intention: "Understanding", code: "39119488061" },
   { category: "Emotional Wellbeing", intention: "Self-esteem", code: "4818951749814" },
   { category: "Emotional Wellbeing", intention: "Self-love", code: "396815" },
@@ -62,7 +302,7 @@ const codes = [
   { category: "Emotional Wellbeing", intention: "Achieving goals", code: "894 719 78 49" },
   { category: "Emotional Wellbeing", intention: "Personal development", code: "318719819" },
   { category: "Emotional Wellbeing", intention: "Forgiveness", code: "33 45 10101" },
-  { category: "Emotional Wellbeing", intention: "Stress relief / relaxation", code: "13 13 514" },
+  { category: "Emotional Wellbeing", intention: "Stress relief", code: "13 13 514" },
   { category: "Emotional Wellbeing", intention: "Calm down stress", code: "05 50 561" },
   { category: "Emotional Wellbeing", intention: "Fresh start / restart", code: "24 27 483" },
   { category: "Emotional Wellbeing", intention: "Clear negative emotions", code: "45 892 456 7478 69925" },
@@ -79,7 +319,6 @@ const codes = [
   { category: "Emotional Wellbeing", intention: "Break bad habits", code: "456 923 8484 79256" },
   { category: "Emotional Wellbeing", intention: "Self-love and self-worth", code: "84 72 167" },
   { category: "Emotional Wellbeing", intention: "Well-being", code: "33 96 815" },
-  // Love & Romance
   { category: "Love & Romance", intention: "Love (general)", code: "888 412 1289018" },
   { category: "Love & Romance", intention: "Unconditional love", code: "56 57 893" },
   { category: "Love & Romance", intention: "Eternal love / deep bond", code: "888912818848" },
@@ -88,12 +327,10 @@ const codes = [
   { category: "Love & Romance", intention: "Manifest romance", code: "401543512" },
   { category: "Love & Romance", intention: "Get your ex back", code: "89974476" },
   { category: "Love & Romance", intention: "A boyfriend", code: "5231812" },
-  // Relationships & Family
   { category: "Relationships & Family", intention: "Friendship", code: "434676636" },
   { category: "Relationships & Family", intention: "Attract friendship", code: "46482872" },
   { category: "Relationships & Family", intention: "Harmonize the whole family", code: "814418 719" },
   { category: "Relationships & Family", intention: "Harmonious family relationships", code: "285555901" },
-  // Health & Fitness
   { category: "Health & Fitness", intention: "Good health (general)", code: "80845700" },
   { category: "Health & Fitness", intention: "Healthy body now and forever", code: "5185213" },
   { category: "Health & Fitness", intention: "Perfect health", code: "2233857" },
@@ -110,22 +347,16 @@ const codes = [
   { category: "Health & Fitness", intention: "Healing stress", code: "87820622" },
   { category: "Health & Fitness", intention: "Allergy relief (general)", code: "897879978" },
   { category: "Health & Fitness", intention: "Allergies", code: "45143212" },
-  { category: "Health & Fitness", intention: "Allergy / ENT general", code: "13 14 335" },
   { category: "Health & Fitness", intention: "Heartburn", code: "8124567" },
   { category: "Health & Fitness", intention: "Bioenergy restoration", code: "918714" },
   { category: "Health & Fitness", intention: "Flexibility", code: "36764709" },
   { category: "Health & Fitness", intention: "Muscle gain", code: "740800" },
-  { category: "Health & Fitness", intention: "Lose weight", code: "31 22 778" },
-  { category: "Health & Fitness", intention: "Morbid obesity", code: "25 65 993" },
   { category: "Health & Fitness", intention: "Blood pressure regulation", code: "11 84 744" },
   { category: "Health & Fitness", intention: "High blood pressure", code: "88 63 292" },
   { category: "Health & Fitness", intention: "Chronic fatigue", code: "24 58 972" },
   { category: "Health & Fitness", intention: "Improve sleep quality", code: "10 42 7896" },
-  { category: "Health & Fitness", intention: "Long-standing insomnia", code: "11 21 495" },
-  { category: "Health & Fitness", intention: "Situational insomnia", code: "56 17 112" },
-  { category: "Health & Fitness", intention: "Cellular damage (any sort)", code: "33 45 634" },
-  { category: "Health & Fitness", intention: "Optimum body pH", code: "55 65 971" },
-  // Beauty
+  { category: "Health & Fitness", intention: "Insomnia", code: "11 21 495" },
+  { category: "Health & Fitness", intention: "Cellular damage", code: "33 45 634" },
   { category: "Beauty", intention: "Beauty / attractiveness", code: "83585179" },
   { category: "Beauty", intention: "Beauty (alt)", code: "4394851" },
   { category: "Beauty", intention: "Rosacea", code: "16 25 511" },
@@ -133,356 +364,193 @@ const codes = [
   { category: "Beauty", intention: "Nourish hair", code: "33 48452" },
   { category: "Beauty", intention: "Full / thick hair", code: "37528084" },
   { category: "Beauty", intention: "Fast hair growth", code: "67842553" },
-  // DNA / Regeneration
   { category: "DNA & Regeneration", intention: "DNA restoration", code: "641849 8989" },
+  { category: "DNA & Regeneration", intention: "DNA activation", code: "4814812" },
   { category: "DNA & Regeneration", intention: "Rejuvenation", code: "514" },
   { category: "DNA & Regeneration", intention: "Skin restoration", code: "519 606 901319" },
-  { category: "DNA & Regeneration", intention: "Cellular regeneration (any damage)", code: "33 45 634" },
-  { category: "DNA & Regeneration", intention: "Herpes viruses (cellular)", code: "88 21 233" },
-  { category: "DNA & Regeneration", intention: "Anoxic brain injury recovery", code: "66 51 816" },
+  { category: "DNA & Regeneration", intention: "Cellular regeneration", code: "33 45 634" },
   { category: "DNA & Regeneration", intention: "Stroke recovery", code: "54 32 175" },
-  { category: "DNA & Regeneration", intention: "Neurological injury relearning (eat/swallow)", code: "69 78 55123" },
-  // Neurological
-  { category: "Neurological", intention: "Neurological conditions (master)", code: "8345444" },
+  { category: "DNA & Regeneration", intention: "Anoxic brain injury recovery", code: "66 51 816" },
   { category: "Neurological", intention: "Headache (general)", code: "23 74 555" },
   { category: "Neurological", intention: "Migraine", code: "58 33 554" },
   { category: "Neurological", intention: "Migraine (resistant)", code: "95 96 562" },
   { category: "Neurological", intention: "Back pain (general)", code: "71 81 533" },
-  { category: "Neurological", intention: "Lumbago / lower back pain", code: "71 91 334" },
+  { category: "Neurological", intention: "Lower back pain / lumbago", code: "71 91 334" },
   { category: "Neurological", intention: "Sciatic nerve", code: "87 47 838" },
-  { category: "Neurological", intention: "Prolapsed intervertebral disc", code: "78 78 833" },
   { category: "Neurological", intention: "Herniated disc", code: "89 87 438" },
   { category: "Neurological", intention: "Chronic pain (general)", code: "23 31 443" },
-  { category: "Neurological", intention: "Complex regional pain syndrome (CRPS)", code: "15 35 991" },
-  { category: "Neurological", intention: "Shingles", code: "45 46 162" },
   { category: "Neurological", intention: "Shoulder pain", code: "17 16 911" },
   { category: "Neurological", intention: "Stroke (first aid)", code: "78 89 535" },
-  { category: "Neurological", intention: "Stroke recovery", code: "54 32 175" },
   { category: "Neurological", intention: "ALS (motor neurone disease)", code: "87 89 114" },
   { category: "Neurological", intention: "Cerebral palsy", code: "55 96 183" },
-  { category: "Neurological", intention: "Guillain-Barré syndrome", code: "41 57 051" },
-  { category: "Neurological", intention: "Limb Girdle Muscular Dystrophy", code: "53 59 816" },
   { category: "Neurological", intention: "Multiple sclerosis (general)", code: "45 96 151" },
-  { category: "Neurological", intention: "Multiple sclerosis (relapsing/remitting)", code: "19 86 116" },
-  { category: "Neurological", intention: "Multiple sclerosis (original code)", code: "51843218" },
+  { category: "Neurological", intention: "Multiple sclerosis (relapsing)", code: "19 86 116" },
   { category: "Neurological", intention: "Parkinson's disease", code: "81 23 7961" },
   { category: "Neurological", intention: "Dementia", code: "29 56 932" },
-  { category: "Neurological", intention: "Alzheimer's dementia", code: "25 49 563" },
+  { category: "Neurological", intention: "Alzheimer's", code: "25 49 563" },
   { category: "Neurological", intention: "Neuropathy / nerve damage", code: "65 57 142" },
   { category: "Neurological", intention: "Tinnitus", code: "34 56 879" },
-  { category: "Neurological", intention: "Restore grip strength", code: "72 52 594" },
   { category: "Neurological", intention: "Trigeminal neuralgia", code: "98 72 7458" },
-  { category: "Neurological", intention: "Insomnia (stress/worry)", code: "46 19 207" },
-  { category: "Neurological", intention: "Dyslexia / learning disorders", code: "33 72 413" },
   { category: "Neurological", intention: "Vertigo", code: "40 04 100" },
   { category: "Neurological", intention: "Dizziness", code: "30 13 103" },
   { category: "Neurological", intention: "Paralysis", code: "23 66 182 973 437 9" },
   { category: "Neurological", intention: "Improve memory", code: "22 11 377" },
   { category: "Neurological", intention: "Forgetfulness", code: "23 22 941 760 9395" },
   { category: "Neurological", intention: "Traumatic brain injury", code: "51843213" },
-  { category: "Neurological", intention: "Progressive muscular dystrophy", code: "85432183" },
-  { category: "Neurological", intention: "Sleep disorders", code: "514248538" },
-  { category: "Neurological", intention: "Radiculopathy / radiculitis", code: "5481321" },
-  { category: "Neurological", intention: "Syringomyelia", code: "1777771" },
-  { category: "Neurological", intention: "Spinal amyotrophy", code: "5483312" },
   { category: "Neurological", intention: "Tremor", code: "3148567" },
-  { category: "Neurological", intention: "Chorea", code: "4831485" },
+  { category: "Neurological", intention: "Sleep disorders", code: "514248538" },
   { category: "Neurological", intention: "Encephalitis (viral)", code: "48188884" },
-  { category: "Neurological", intention: "Epidural abscess", code: "888888149" },
-  // Psychiatric & Psychological
-  { category: "Psychiatric & Psychological", intention: "Mental illness (master)", code: "8345444" },
-  { category: "Psychiatric & Psychological", intention: "Alcoholism", code: "148543292" },
-  { category: "Psychiatric & Psychological", intention: "Amnestic (Korsakov) syndrome", code: "4185432" },
-  { category: "Psychiatric & Psychological", intention: "Affective syndromes", code: "548142182" },
-  { category: "Psychiatric & Psychological", intention: "Delusional syndromes", code: "8142351" },
-  { category: "Psychiatric & Psychological", intention: "Hallucinatory syndrome", code: "4815428" },
-  { category: "Psychiatric & Psychological", intention: "Intoxication psychosis", code: "1142351" },
-  { category: "Psychiatric & Psychological", intention: "Hysterical syndromes", code: "5154891" },
-  { category: "Psychiatric & Psychological", intention: "Catatonic syndromes", code: "51843214" },
-  { category: "Psychiatric & Psychological", intention: "Manic-depressive psychosis (bipolar)", code: "514218857" },
   { category: "Psychiatric & Psychological", intention: "Bipolar disorder / mania", code: "25 39 579" },
-  { category: "Psychiatric & Psychological", intention: "Compulsive disorder (OCD)", code: "8142543" },
+  { category: "Psychiatric & Psychological", intention: "OCD / compulsive disorder", code: "8142543" },
   { category: "Psychiatric & Psychological", intention: "Schizophrenia", code: "13 31 413" },
   { category: "Psychiatric & Psychological", intention: "Narcissistic personality disorder", code: "97 96 533" },
   { category: "Psychiatric & Psychological", intention: "Borderline personality disorder", code: "96 15 581" },
   { category: "Psychiatric & Psychological", intention: "Oppositional defiant disorder", code: "06 06 119" },
-  { category: "Psychiatric & Psychological", intention: "ADHD (severe, treatment-resistant)", code: "16 612 485 97895" },
-  { category: "Psychiatric & Psychological", intention: "ADHD / behavioral disorders (children)", code: "86 42 789" },
-  { category: "Psychiatric & Psychological", intention: "PTSD (painful past memories)", code: "25 37 536" },
+  { category: "Psychiatric & Psychological", intention: "ADHD (severe)", code: "16 612 485 97895" },
+  { category: "Psychiatric & Psychological", intention: "ADHD / behavioral (children)", code: "86 42 789" },
+  { category: "Psychiatric & Psychological", intention: "PTSD (painful memories)", code: "25 37 536" },
   { category: "Psychiatric & Psychological", intention: "PTSD (hypervigilance)", code: "11 66 518" },
   { category: "Psychiatric & Psychological", intention: "PTSD (dissociation)", code: "12 31 511" },
-  { category: "Psychiatric & Psychological", intention: "Generalized anxiety disorder (GAD)", code: "25 36 933" },
-  { category: "Psychiatric & Psychological", intention: "Performance anxiety", code: "29 38 516" },
-  { category: "Psychiatric & Psychological", intention: "Agoraphobia", code: "40 50 666" },
+  { category: "Psychiatric & Psychological", intention: "Generalized anxiety disorder", code: "25 36 933" },
   { category: "Psychiatric & Psychological", intention: "Panic attacks", code: "72 84 555" },
-  { category: "Psychiatric & Psychological", intention: "Medical procedure anxiety", code: "11 66 767" },
+  { category: "Psychiatric & Psychological", intention: "Agoraphobia", code: "40 50 666" },
   { category: "Psychiatric & Psychological", intention: "Public speaking anxiety", code: "19 66 551" },
   { category: "Psychiatric & Psychological", intention: "Anorexia", code: "92 03 179" },
   { category: "Psychiatric & Psychological", intention: "Eating disorder", code: "78 19 335" },
-  { category: "Psychiatric & Psychological", intention: "Neurotransmitter imbalance (depression/anxiety)", code: "22 33 516" },
   { category: "Psychiatric & Psychological", intention: "Depression (adults)", code: "29 63 586" },
-  { category: "Psychiatric & Psychological", intention: "Depression (pediatric/adolescent)", code: "22 26 111" },
+  { category: "Psychiatric & Psychological", intention: "Depression (pediatric)", code: "22 26 111" },
   { category: "Psychiatric & Psychological", intention: "Addiction (general)", code: "84 72 723" },
-  { category: "Psychiatric & Psychological", intention: "Addiction recovery (sobriety maintenance)", code: "56 17 998" },
-  { category: "Psychiatric & Psychological", intention: "Addiction (family support)", code: "01 61 510" },
+  { category: "Psychiatric & Psychological", intention: "Sobriety maintenance", code: "56 17 998" },
   { category: "Psychiatric & Psychological", intention: "Alcohol dependence", code: "25 36 397" },
   { category: "Psychiatric & Psychological", intention: "Smoking cessation", code: "99 61 553" },
-  { category: "Psychiatric & Psychological", intention: "Trauma / freeze response", code: "21 46 015" },
   { category: "Psychiatric & Psychological", intention: "Grief and loss", code: "116 116 1998" },
-  { category: "Psychiatric & Psychological", intention: "Suicidal thoughts / ideation", code: "443 792 854 61523" },
-  { category: "Psychiatric & Psychological", intention: "Suicidal thinking", code: "55 69 872" },
-  { category: "Psychiatric & Psychological", intention: "Self-harm / cutting", code: "51 56 931" },
-  { category: "Psychiatric & Psychological", intention: "Nail biting / hair pulling / OCD behaviors", code: "64 07 991" },
   { category: "Psychiatric & Psychological", intention: "Hopelessness and despair", code: "45 36 812" },
   { category: "Psychiatric & Psychological", intention: "Domestic violence support", code: "25 33 698" },
-  // Eye & Ear / ENT
-  { category: "Eye, Ear & ENT", intention: "Eye conditions (general)", code: "5814325" },
   { category: "Eye, Ear & ENT", intention: "Cataract", code: "77 78 177" },
-  { category: "Eye, Ear & ENT", intention: "Glaucoma / high eye pressure", code: "77 78 176" },
+  { category: "Eye, Ear & ENT", intention: "Glaucoma", code: "77 78 176" },
   { category: "Eye, Ear & ENT", intention: "Macular degeneration", code: "51 60 641" },
-  { category: "Eye, Ear & ENT", intention: "Coloboma (congenital eye defect)", code: "04 96 512" },
-  { category: "Eye, Ear & ENT", intention: "Eye irritation (headache-related)", code: "42 37 346" },
+  { category: "Eye, Ear & ENT", intention: "Eye irritation", code: "42 37 346" },
   { category: "Eye, Ear & ENT", intention: "Conjunctivitis / pink eye", code: "44 37 224" },
-  { category: "Eye, Ear & ENT", intention: "Severe / recurrent conjunctivitis", code: "45 82 531" },
   { category: "Eye, Ear & ENT", intention: "Stye", code: "13 78 887" },
-  { category: "Eye, Ear & ENT", intention: "Eye injury", code: "33 69 878" },
   { category: "Eye, Ear & ENT", intention: "Eye fatigue", code: "00 77 106" },
-  { category: "Eye, Ear & ENT", intention: "Farsightedness (hyperopia)", code: "24 17 158" },
+  { category: "Eye, Ear & ENT", intention: "Farsightedness", code: "24 17 158" },
   { category: "Eye, Ear & ENT", intention: "Near-sightedness (myopia)", code: "76 14 182" },
-  { category: "Eye, Ear & ENT", intention: "Poor eyesight / blindness", code: "99 65 491" },
   { category: "Eye, Ear & ENT", intention: "Vision improvement", code: "29 37 853" },
-  { category: "Eye, Ear & ENT", intention: "Amblyopia (impaired vision)", code: "31 36 407" },
   { category: "Eye, Ear & ENT", intention: "Hearing loss / deafness", code: "88 33 421" },
   { category: "Eye, Ear & ENT", intention: "Age-related hearing loss", code: "46 19 551" },
-  { category: "Eye, Ear & ENT", intention: "Tinnitus", code: "34 56 879" },
+  { category: "Eye, Ear & ENT", intention: "Tinnitus (ringing in ears)", code: "34 56 879" },
   { category: "Eye, Ear & ENT", intention: "Middle ear inflammation", code: "56 23 899" },
   { category: "Eye, Ear & ENT", intention: "Sinuses", code: "22 55 732" },
-  { category: "Eye, Ear & ENT", intention: "Sore throat / pharyngitis", code: "44 88 772" },
-  { category: "Eye, Ear & ENT", intention: "Pharyngitis (post-nasal drip)", code: "52 18 913" },
+  { category: "Eye, Ear & ENT", intention: "Sore throat", code: "44 88 772" },
   { category: "Eye, Ear & ENT", intention: "Tonsillitis", code: "80 13 494" },
-  { category: "Eye, Ear & ENT", intention: "Vocal cord paralysis / nodules", code: "52 53 112" },
-  { category: "Eye, Ear & ENT", intention: "Parotid gland tumor", code: "51 86 256" },
-  // Infectious Diseases
-  { category: "Infectious Diseases", intention: "Infectious diseases (master)", code: "5421427" },
-  { category: "Infectious Diseases", intention: "Amebiasis / amebic dysentery", code: "1289145" },
-  { category: "Infectious Diseases", intention: "Rabies", code: "4812543" },
-  { category: "Infectious Diseases", intention: "Botulism", code: "5481252" },
-  { category: "Infectious Diseases", intention: "Brucellosis", code: "4122222" },
-  { category: "Infectious Diseases", intention: "Viral hepatitis A & B", code: "5412514" },
-  { category: "Infectious Diseases", intention: "Herpetic infections", code: "2312489" },
-  { category: "Infectious Diseases", intention: "Herpes viruses (cellular)", code: "88 21 233" },
   { category: "Infectious Diseases", intention: "Influenza / flu", code: "4814212" },
-  { category: "Infectious Diseases", intention: "Dysentery", code: "4812148" },
-  { category: "Infectious Diseases", intention: "Diphtheria", code: "5556679" },
-  { category: "Infectious Diseases", intention: "Whooping cough", code: "4812548" },
+  { category: "Infectious Diseases", intention: "Herpetic infections", code: "2312489" },
+  { category: "Infectious Diseases", intention: "Viral hepatitis A & B", code: "5412514" },
   { category: "Infectious Diseases", intention: "Measles", code: "4214825" },
   { category: "Infectious Diseases", intention: "Rubella", code: "4218547" },
-  { category: "Infectious Diseases", intention: "Legionellosis", code: "5142122" },
-  { category: "Infectious Diseases", intention: "Leishmaniasis", code: "5184321" },
-  { category: "Infectious Diseases", intention: "Leptospirosis", code: "5128432" },
-  { category: "Infectious Diseases", intention: "Listeriosis", code: "5812438" },
-  { category: "Infectious Diseases", intention: "Ebola / Marburg fever", code: "5184599" },
-  { category: "Infectious Diseases", intention: "Giardiasis", code: "5189148" },
-  { category: "Infectious Diseases", intention: "Malaria", code: "5189999" },
-  { category: "Infectious Diseases", intention: "Meningococcal disease", code: "5891423" },
-  { category: "Infectious Diseases", intention: "Mycoplasmosis", code: "5481111" },
-  { category: "Infectious Diseases", intention: "Infectious mononucleosis", code: "5142548" },
-  { category: "Infectious Diseases", intention: "Chickenpox (varicella)", code: "48154215" },
-  { category: "Infectious Diseases", intention: "Acute respiratory infections", code: "48145488" },
+  { category: "Infectious Diseases", intention: "Chickenpox", code: "48154215" },
   { category: "Infectious Diseases", intention: "Mumps", code: "3218421" },
-  { category: "Infectious Diseases", intention: "Food poisoning (bacterial)", code: "5184231" },
-  { category: "Infectious Diseases", intention: "Rotavirus", code: "5148567" },
-  { category: "Infectious Diseases", intention: "Salmonellosis", code: "5142189" },
-  { category: "Infectious Diseases", intention: "Anthrax", code: "9998991" },
+  { category: "Infectious Diseases", intention: "Whooping cough", code: "4812548" },
+  { category: "Infectious Diseases", intention: "Diphtheria", code: "5556679" },
   { category: "Infectious Diseases", intention: "Scarlet fever", code: "5142485" },
   { category: "Infectious Diseases", intention: "Tetanus", code: "5671454" },
+  { category: "Infectious Diseases", intention: "Malaria", code: "5189999" },
   { category: "Infectious Diseases", intention: "AIDS / HIV", code: "5148555" },
-  { category: "Infectious Diseases", intention: "Typhoid / paratyphoid", code: "1411111" },
-  { category: "Infectious Diseases", intention: "Typhus (louse)", code: "1444444" },
-  { category: "Infectious Diseases", intention: "Toxoplasmosis", code: "8914755" },
-  { category: "Infectious Diseases", intention: "Tularemia", code: "4819489" },
   { category: "Infectious Diseases", intention: "Cholera", code: "4891491" },
-  { category: "Infectious Diseases", intention: "Swine flu", code: "8998888" },
+  { category: "Infectious Diseases", intention: "Typhoid", code: "1411111" },
+  { category: "Infectious Diseases", intention: "Toxoplasmosis", code: "8914755" },
+  { category: "Infectious Diseases", intention: "Salmonellosis", code: "5142189" },
+  { category: "Infectious Diseases", intention: "Food poisoning (bacterial)", code: "5184231" },
+  { category: "Infectious Diseases", intention: "Acute respiratory infections", code: "48145488" },
+  { category: "Infectious Diseases", intention: "Meningococcal disease", code: "5891423" },
+  { category: "Infectious Diseases", intention: "Giardiasis", code: "5189148" },
+  { category: "Infectious Diseases", intention: "Botulism", code: "5481252" },
   { category: "Infectious Diseases", intention: "Tick-borne encephalitis", code: "7891010" },
-  { category: "Infectious Diseases", intention: "Ascariasis (roundworm)", code: "4814812" },
-  { category: "Infectious Diseases", intention: "Trichinellosis (trichinosis)", code: "7777778" },
+  { category: "Infectious Diseases", intention: "Ebola / Marburg fever", code: "5184599" },
   { category: "Infectious Diseases", intention: "Echinococcosis", code: "5481235" },
-  { category: "Infectious Diseases", intention: "Enterobiasis (pinworm)", code: "5123542" },
-  { category: "Infectious Diseases", intention: "Schistosomiasis", code: "48125428" },
-  { category: "Infectious Diseases", intention: "Cysticercosis", code: "4512824" },
-  { category: "Infectious Diseases", intention: "Malnutrition / starvation", code: "5456784" },
-  // Skin Conditions
   { category: "Skin Conditions", intention: "Skin diseases (general)", code: "18584321" },
-  { category: "Skin Conditions", intention: "Skin restoration", code: "519 606 901319" },
   { category: "Skin Conditions", intention: "Clear skin", code: "79531807" },
   { category: "Skin Conditions", intention: "Acne", code: "22 12 379" },
   { category: "Skin Conditions", intention: "Rosacea", code: "16 25 511" },
-  { category: "Skin Conditions", intention: "Skin cancer", code: "8148957" },
-  { category: "Skin Conditions", intention: "Melanoma", code: "5674321" },
-  { category: "Skin Conditions", intention: "Skin lymphoma", code: "5891243" },
   { category: "Skin Conditions", intention: "Allergic eczema", code: "0195451" },
-  { category: "Skin Conditions", intention: "Hemorrhagic eczema", code: "0480421" },
-  { category: "Skin Conditions", intention: "Lymphatic eczema", code: "5148548" },
-  { category: "Skin Conditions", intention: "Psoriatic arthropathy / psoriasis", code: "0145421" },
-  { category: "Skin Conditions", intention: "Kaposi's sarcoma", code: "8214382" },
-  { category: "Skin Conditions", intention: "Shingles (skin eruption)", code: "45 46 162" },
-  { category: "Skin Conditions", intention: "Stye (eyelid)", code: "13 78 887" },
+  { category: "Skin Conditions", intention: "Psoriasis", code: "0145421" },
+  { category: "Skin Conditions", intention: "Skin restoration", code: "519 606 901319" },
+  { category: "Skin Conditions", intention: "Melanoma", code: "5674321" },
+  { category: "Skin Conditions", intention: "Shingles", code: "45 46 162" },
   { category: "Skin Conditions", intention: "Herpes virus lesions", code: "88 21 233" },
-  { category: "Skin Conditions", intention: "Pediculosis (lice)", code: "48148121" },
-  { category: "Skin Conditions", intention: "Nourish / grow hair", code: "33 48452" },
   { category: "Skin Conditions", intention: "Fast hair growth", code: "67842553" },
 ];
 
-const categoryColors = {
-  "Wealth & Money":           { bg: "#111a11", accent: "#4ade80", text: "#86efac" },
-  "Business":                 { bg: "#11112a", accent: "#818cf8", text: "#a5b4fc" },
-  "Manifestation":            { bg: "#1e112a", accent: "#e879f9", text: "#f0abfc" },
-  "Emotional Wellbeing":      { bg: "#241a10", accent: "#fb923c", text: "#fdba74" },
-  "Love & Romance":           { bg: "#241111", accent: "#f87171", text: "#fca5a5" },
-  "Relationships & Family":   { bg: "#101e1e", accent: "#2dd4bf", text: "#5eead4" },
-  "Health & Fitness":         { bg: "#111a11", accent: "#34d399", text: "#6ee7b7" },
-  "Beauty":                   { bg: "#1e1118", accent: "#f472b6", text: "#f9a8d4" },
-  "DNA & Regeneration":       { bg: "#1a1124", accent: "#c084fc", text: "#d8b4fe" },
-  "Neurological":             { bg: "#0f1620", accent: "#38bdf8", text: "#7dd3fc" },
-  "Psychiatric & Psychological": { bg: "#1a1020", accent: "#a78bfa", text: "#c4b5fd" },
-  "Eye, Ear & ENT":           { bg: "#0f1a18", accent: "#34d399", text: "#6ee7b7" },
-  "Infectious Diseases":      { bg: "#1a1010", accent: "#f97316", text: "#fdba74" },
-  "Skin Conditions":          { bg: "#1a1318", accent: "#e879f9", text: "#f0abfc" },
-};
-
 const categoryEmojis = {
-  "Wealth & Money": "💰", "Business": "🏢", "Manifestation": "✨",
-  "Emotional Wellbeing": "💆", "Love & Romance": "💕", "Relationships & Family": "👨‍👩‍👧",
-  "Health & Fitness": "💪", "Beauty": "🌸", "DNA & Regeneration": "🧬",
-  "Neurological": "🧠", "Psychiatric & Psychological": "🪷",
-  "Eye, Ear & ENT": "👁️", "Infectious Diseases": "🦠", "Skin Conditions": "✨",
+  "Wealth & Money":"◈","Business":"◇","Manifestation":"✦",
+  "Emotional Wellbeing":"◉","Love & Romance":"♡","Relationships & Family":"◎",
+  "Health & Fitness":"◈","Beauty":"✧","DNA & Regeneration":"⌬",
+  "Neurological":"◎","Psychiatric & Psychological":"◉",
+  "Eye, Ear & ENT":"◈","Infectious Diseases":"◇","Skin Conditions":"✦"
 };
 
-export default function GrabovoiSearch() {
-  const [query, setQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [copiedCode, setCopiedCode] = useState(null);
+let activeCategory = "All";
 
-  const categories = ["All", ...Object.keys(categoryColors)];
-
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase();
-    return codes.filter(item => {
-      const matchesQuery = !q || item.intention.toLowerCase().includes(q) || item.code.includes(q) || item.category.toLowerCase().includes(q);
-      const matchesCat = selectedCategory === "All" || item.category === selectedCategory;
-      return matchesQuery && matchesCat;
-    });
-  }, [query, selectedCategory]);
-
-  const handleCopy = (code, id) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(id);
-    setTimeout(() => setCopiedCode(null), 1500);
-  };
-
-  return (
-    <div style={{ minHeight: "100vh", background: "#080810", fontFamily: "'Georgia', serif", color: "#e2e8f0" }}>
-      {/* Header */}
-      <div style={{
-        background: "linear-gradient(135deg, #0a0a16 0%, #130a20 50%, #0a1614 100%)",
-        borderBottom: "1px solid #1e1e38",
-        padding: "28px 20px 20px",
-        textAlign: "center",
-        position: "sticky", top: 0, zIndex: 10,
-        backdropFilter: "blur(12px)",
-      }}>
-        <div style={{ fontSize: "10px", letterSpacing: "4px", color: "#7c6fcd", textTransform: "uppercase", marginBottom: "6px" }}>
-          Universe Cheat Codes
-        </div>
-        <h1 style={{
-          fontSize: "26px", fontWeight: "normal", margin: "0 0 4px",
-          background: "linear-gradient(135deg, #e879f9, #818cf8, #38bdf8, #34d399)",
-          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "2px",
-        }}>
-          Grabovoi Codes
-        </h1>
-        <div style={{ fontSize: "12px", color: "#475569", marginBottom: "16px" }}>
-          {filtered.length} of {codes.length} codes across {categories.length - 1} categories
-        </div>
-        {/* Search */}
-        <div style={{ maxWidth: "480px", margin: "0 auto 14px", position: "relative" }}>
-          <span style={{ position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)", color: "#7c6fcd", fontSize: "15px" }}>🔍</span>
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Search by intention or code number..."
-            style={{
-              width: "100%", padding: "11px 14px 11px 40px",
-              background: "#0d0d1a", border: "1px solid #1e1e38",
-              borderRadius: "10px", color: "#e2e8f0", fontSize: "14px",
-              outline: "none", boxSizing: "border-box", fontFamily: "inherit",
-            }}
-          />
-        </div>
-        {/* Category pills */}
-        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center", maxWidth: "720px", margin: "0 auto" }}>
-          {categories.map(cat => {
-            const isActive = selectedCategory === cat;
-            const color = cat !== "All" ? categoryColors[cat]?.accent : "#7c6fcd";
-            return (
-              <button key={cat} onClick={() => setSelectedCategory(cat)} style={{
-                padding: "5px 12px", borderRadius: "16px",
-                border: `1px solid ${isActive ? color : "#1e1e38"}`,
-                background: isActive ? `${color}20` : "transparent",
-                color: isActive ? color : "#475569",
-                fontSize: "11px", cursor: "pointer", transition: "all 0.15s",
-                fontFamily: "inherit", letterSpacing: "0.4px", whiteSpace: "nowrap",
-              }}>
-                {cat !== "All" && categoryEmojis[cat]} {cat}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Results */}
-      <div style={{ padding: "16px", maxWidth: "680px", margin: "0 auto" }}>
-        {filtered.length === 0 ? (
-          <div style={{ textAlign: "center", color: "#334155", padding: "60px 0", fontSize: "14px" }}>
-            No codes found for "{query}"
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {filtered.map((item, i) => {
-              const colors = categoryColors[item.category] || { bg: "#111122", accent: "#818cf8", text: "#a5b4fc" };
-              const uid = `${i}-${item.code}`;
-              const isCopied = copiedCode === uid;
-              return (
-                <div key={uid} style={{
-                  background: colors.bg, border: `1px solid ${colors.accent}28`,
-                  borderRadius: "10px", padding: "12px 14px",
-                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px",
-                }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "9px", letterSpacing: "2px", color: colors.accent, textTransform: "uppercase", marginBottom: "3px", opacity: 0.75 }}>
-                      {categoryEmojis[item.category]} {item.category}
-                    </div>
-                    <div style={{ fontSize: "14px", color: "#cbd5e1", marginBottom: "4px" }}>{item.intention}</div>
-                    <div style={{ fontFamily: "'Courier New', monospace", fontSize: "16px", color: colors.text, letterSpacing: "3px", fontWeight: "bold" }}>
-                      {item.code}
-                    </div>
-                  </div>
-                  <button onClick={() => handleCopy(item.code, uid)} style={{
-                    padding: "7px 13px", borderRadius: "7px",
-                    border: `1px solid ${isCopied ? colors.accent : "#1e1e38"}`,
-                    background: isCopied ? `${colors.accent}28` : "transparent",
-                    color: isCopied ? colors.accent : "#475569",
-                    fontSize: "11px", cursor: "pointer", whiteSpace: "nowrap",
-                    transition: "all 0.15s", fontFamily: "inherit", flexShrink: 0,
-                  }}>
-                    {isCopied ? "✓ Copied" : "Copy"}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+function buildFilters() {
+  const container = document.getElementById('filters');
+  const cats = ["All", ...new Set(codes.map(c => c.category))];
+  cats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (cat === 'All' ? ' active' : '');
+    btn.textContent = cat === 'All' ? 'All Codes' : cat;
+    btn.onclick = () => {
+      activeCategory = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterCodes();
+    };
+    container.appendChild(btn);
+  });
 }
+
+function filterCodes() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = codes.filter(item => {
+    const matchCat = activeCategory === 'All' || item.category === activeCategory;
+    const matchQ = !q || item.intention.toLowerCase().includes(q) || item.code.includes(q) || item.category.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+  const badge = document.getElementById('countBadge');
+  badge.textContent = filtered.length + ' of ' + codes.length + ' Codes · 14 Categories';
+  if (filtered.length === 0) {
+    document.getElementById('main').innerHTML = '<div class="empty">No codes found. Try a different search.</div>';
+    return;
+  }
+  const groups = {};
+  filtered.forEach(item => {
+    if (!groups[item.category]) groups[item.category] = [];
+    groups[item.category].push(item);
+  });
+  let html = '';
+  Object.entries(groups).forEach(([cat, items]) => {
+    html += '<div class="group-header"><div class="group-header-line"></div><div class="group-title">' + (categoryEmojis[cat]||'·') + ' ' + cat + '</div><div class="group-header-line" style="background:linear-gradient(90deg,transparent,var(--gold-dim));"></div></div>';
+    items.forEach(item => {
+      html += '<div class="code-card"><div class="code-info"><div class="code-intention">' + item.intention + '</div><div class="code-number">' + item.code + '</div></div><button class="copy-btn" onclick="copyCode(this,\'' + item.code.replace(/'/g,"\\'") + '\')">Copy</button></div>';
+    });
+  });
+  document.getElementById('main').innerHTML = html;
+}
+
+function copyCode(btn, code) {
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'Copied'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  }).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = code; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    btn.textContent = 'Copied'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+buildFilters();
+filterCodes();
+</script>
+</body>
+</html>
